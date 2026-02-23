@@ -1,5 +1,6 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import { get, set, del } from 'idb-keyval';
 import { supabase, hasSupabaseKeys } from './supabase';
 
 export interface VocabularyWord {
@@ -40,8 +41,10 @@ interface ProgressState {
     sessions: PracticeSession[];
     conversations: Conversation[];
     activeConversationId: string | null;
+    userId: string;
 
     // Actions
+    setUserId: (id: string) => void;
     addMessage: (stats: { hasGrammarMistake: boolean; responseTimeMs: number; wordCount: number; complexWordCount: number }) => void;
     addVocabulary: (word: string, context?: string, definition?: string) => void;
     updateFluencyScore: () => void;
@@ -67,6 +70,9 @@ export const useProgressStore = create<ProgressState>()(
             sessions: [],
             conversations: [],
             activeConversationId: null,
+            userId: 'local-user-' + Math.random().toString(36).substring(7), // Fallback local ID
+
+            setUserId: (id) => set({ userId: id }),
 
             addMessage: (stats) => {
                 const today = new Date().toISOString().split('T')[0];
@@ -102,7 +108,7 @@ export const useProgressStore = create<ProgressState>()(
                         // In a real app, you'd have user.id from Supabase Auth.
                         // Here we just update a generic row or rely on RLS policies.
                         supabase.from('profiles').upsert({
-                            id: 'default-user-id', // Placeholder
+                            id: state.userId,
                             fluency_score: Math.max(0, 100 - ((newState.grammarMistakes / newState.totalMessages) * 50)), // Quick estimate
                             total_messages: newState.totalMessages,
                             grammar_mistakes: newState.grammarMistakes,
@@ -112,8 +118,8 @@ export const useProgressStore = create<ProgressState>()(
                         }).then(({ error }: { error: any }) => { if (error) console.warn("[Supabase Sync] Warning:", error?.message || JSON.stringify(error)) });
 
                         supabase.from('sessions').upsert({
-                            id: 'default-user-id-' + today, // Placeholder
-                            user_id: 'default-user-id',
+                            id: state.userId + '-' + today,
+                            user_id: state.userId,
                             date: today,
                             message_count: newState.sessions.find(s => s.date === today)?.messageCount || 1
                         }).then(({ error }: { error: any }) => { if (error) console.warn("[Supabase Sync] Warning:", error?.message || JSON.stringify(error)) });
@@ -146,7 +152,7 @@ export const useProgressStore = create<ProgressState>()(
 
                     if (hasSupabaseKeys()) {
                         supabase.from('vocabulary').insert({
-                            user_id: 'default-user-id',
+                            user_id: state.userId,
                             word,
                             context,
                             definition,
@@ -211,7 +217,7 @@ export const useProgressStore = create<ProgressState>()(
                 if (hasSupabaseKeys()) {
                     supabase.from('conversations').insert({
                         id,
-                        user_id: 'default-user-id',
+                        user_id: get().userId,
                         title: newConv.title,
                         scenario,
                         date: newConv.date
@@ -262,7 +268,7 @@ export const useProgressStore = create<ProgressState>()(
                         supabase.from('messages').insert({
                             id: msg.id,
                             conversation_id: activeId,
-                            user_id: 'default-user-id',
+                            user_id: state.userId,
                             role: msg.role,
                             content: msg.content,
                             correction: msg.correction
@@ -309,7 +315,18 @@ export const useProgressStore = create<ProgressState>()(
             }
         }),
         {
-            name: 'english-practice-progress', // unique name for localStorage key
+            name: 'english-practice-progress', // unique name for indexedDB key
+            storage: createJSONStorage(() => ({
+                getItem: async (name: string): Promise<string | null> => {
+                    return (await get(name)) || null;
+                },
+                setItem: async (name: string, value: string): Promise<void> => {
+                    await set(name, value);
+                },
+                removeItem: async (name: string): Promise<void> => {
+                    await del(name);
+                },
+            })),
         }
     )
 );

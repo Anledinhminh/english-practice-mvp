@@ -8,7 +8,7 @@ import { Mic, Square, Play, Loader2, AlertCircle } from "lucide-react";
 import { useProgressStore, ChatMessage } from "@/lib/store";
 
 export function ChatInterface() {
-    const { conversations, activeConversationId, addMessage, addVocabulary, addChatMessage, updateChatMessage, startConversation, setActiveConversation } = useProgressStore();
+    const { conversations, activeConversationId, addMessage, addVocabulary, addChatMessage, updateChatMessage, startConversation, setActiveConversation, setUserId } = useProgressStore();
     const activeConversation = conversations.find(c => c.id === activeConversationId);
     const messages = activeConversation ? activeConversation.messages : [];
 
@@ -36,6 +36,22 @@ export function ChatInterface() {
             scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
         }
     }, [messages]);
+
+    // Handle initial Supabase Auth for session tracking
+    useEffect(() => {
+        import("@/lib/supabase").then(({ supabase, hasSupabaseKeys }) => {
+            if (hasSupabaseKeys()) {
+                supabase.auth.signInAnonymously().then(({ data, error }: { data: any; error: any }) => {
+                    if (data?.user) {
+                        setUserId(data.user.id);
+                        console.log("Signed in anonymously as:", data.user.id);
+                    } else if (error) {
+                        console.error("Anon Auth failed:", error);
+                    }
+                });
+            }
+        });
+    }, [setUserId]);
 
     // Handle Text Selection
     useEffect(() => {

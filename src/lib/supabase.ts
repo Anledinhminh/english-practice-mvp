@@ -59,4 +59,20 @@ CREATE TABLE public.sessions (
     message_count INTEGER DEFAULT 0,
     UNIQUE(user_id, date)
 );
+
+-- SECURITY: Row Level Security (RLS) Policies
+ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users edit own profile" ON profiles FOR ALL USING (auth.uid() = id);
+
+ALTER TABLE public.conversations ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users edit own conversations" ON conversations FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE public.messages ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users edit own messages" ON messages FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE public.vocabulary ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users edit own vocabulary" ON vocabulary FOR ALL USING (auth.uid() = user_id);
+
+ALTER TABLE public.sessions ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Users edit own sessions" ON sessions FOR ALL USING (auth.uid() = user_id);
 */

@@ -10,21 +10,22 @@ export async function POST(req: Request) {
             return NextResponse.json({ error: 'No audio provided' }, { status: 400 });
         }
 
+        // Limit audio file size to 5MB to prevent OOM
+        if (audioFile.size > 5 * 1024 * 1024) {
+            return NextResponse.json({ error: 'Audio file too large. Please keep recordings under 1 minute.' }, { status: 413 });
+        }
+
         const contentType = audioFile.type || 'audio/webm';
         const result = await hfStt(audioFile, contentType);
 
         return NextResponse.json(result);
     } catch (error: any) {
-        console.error("STT Route Error Details:", error);
+        console.error("[STT API Error] (Hidden from Client):", error.message || error);
 
-        // Pass original Hugging Face error message down if possible
-        const errorMessage = error.message.includes("{")
-            ? error.message
-            : JSON.stringify({ error: error.message });
-
-        return new NextResponse(errorMessage, {
-            status: 500,
-            headers: { 'Content-Type': 'application/json' }
-        });
+        // Return a generic error to the frontend
+        return NextResponse.json(
+            { error: "Audio processing failed. The AI service may be temporarily overloaded." },
+            { status: 500 }
+        );
     }
 }

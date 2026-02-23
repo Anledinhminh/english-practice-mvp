@@ -32,9 +32,12 @@ Format your response strictly as a JSON object with two fields:
 Respond ONLY with valid JSON. Do not include any other text outside the JSON block.
 `;
 
+        // Truncate history to last 10 messages (approx 5 conversational turns) to prevent Context Window/Token limits
+        const recentMessages = messages.slice(-10);
+
         const apiMessages = [
             { role: "system", content: FINAL_SYSTEM_PROMPT },
-            ...messages
+            ...recentMessages
         ];
 
         const result = await hfChat(apiMessages);
@@ -60,7 +63,10 @@ Respond ONLY with valid JSON. Do not include any other text outside the JSON blo
 
         return NextResponse.json(parsedContent);
     } catch (error: any) {
-        console.error("Chat Route Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error("[Chat API Error] (Hidden from Client):", error.message || error);
+        return NextResponse.json(
+            { error: "The AI Tutor is currently overloaded. Please try again in a few moments." },
+            { status: 500 }
+        );
     }
 }

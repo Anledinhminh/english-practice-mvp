@@ -26,13 +26,17 @@ export async function POST(req: Request) {
     try {
         const { word, context } = await req.json();
 
-        if (!word) {
-            return NextResponse.json({ error: 'Word is required' }, { status: 400 });
+        if (!word || word.length > 50) {
+            return NextResponse.json({ error: 'Word is missing or too long' }, { status: 400 });
+        }
+
+        if (context && context.length > 500) {
+            return NextResponse.json({ error: 'Context is too long' }, { status: 400 });
         }
 
         const apiMessages: any = [
             { role: "system", content: SYSTEM_PROMPT },
-            { role: "user", content: `WORD: "${word}"\nCONTEXT: "${context || 'No context provided.'}"` }
+            { role: "user", content: `Define this word: <word>${word}</word>\nFound in this text: <context>${context || 'No context provided.'}</context>` }
         ];
 
         const response = await hf.chatCompletion({
@@ -62,7 +66,10 @@ export async function POST(req: Request) {
 
         return NextResponse.json(parsedContent);
     } catch (error: any) {
-        console.error("Dictionary Route Error:", error);
-        return NextResponse.json({ error: error.message }, { status: 500 });
+        console.error("[Dictionary API Error] (Hidden from Client):", error.message || error);
+        return NextResponse.json(
+            { error: "Dictionary service is currently unavailable." },
+            { status: 500 }
+        );
     }
 }
