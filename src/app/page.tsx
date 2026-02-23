@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { ChatInterface } from "@/components/chat-interface";
 import { DashboardMockup } from "@/components/dashboard-mockup";
 import { ChatHistory } from "@/components/chat-history";
+import { AuthModal } from "@/components/auth-modal";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useProgressStore } from "@/lib/store";
 
@@ -19,8 +20,12 @@ export default function Home() {
   if (!mounted) return null;
 
   return (
-    <main className="min-h-screen bg-slate-50 py-12 px-4 font-sans">
-      <div className="max-w-4xl mx-auto space-y-8">
+    <main className="min-h-screen bg-slate-50 py-12 px-4 font-sans relative">
+      <div className="absolute top-4 right-4 sm:top-8 sm:right-8">
+        <AuthModal />
+      </div>
+
+      <div className="max-w-4xl mx-auto space-y-8 mt-4">
         <div className="text-center space-y-4">
           <h1 className="text-4xl md:text-5xl font-extrabold text-slate-900 tracking-tight">
             English Practice <span className="text-blue-600">MVP</span>
