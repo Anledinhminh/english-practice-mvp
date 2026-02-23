@@ -14,6 +14,8 @@ Hệ thống cho phép người dùng thu âm giọng nói, dịch sang văn b�
 - **Advanced Fluency Algorithm (Mới):** Tính điểm Fluency nâng cao dựa trên tỷ lệ lỗi ngữ pháp, tốc độ phản xạ (response time) và mức độ sử dụng từ vựng phức tạp.
 - **Roleplay Scenarios (Mới):** Khách hàng có thể chọn kịch bản (Phỏng vấn, Nhà hàng, Du lịch...) trước khi bắt đầu chat để AI nhập vai.
 - **Supabase Cloud Sync (Mới):** Dữ liệu Zustand được đồng bộ hóa lên Supabase PostgreSQL theo thời gian thực (yêu cầu cấu hình API Key).
+- **Security & Reliability Hardening (Mới):** Chống tấn công Prompt Injection, giới hạn gói tin Audio (5MB), cắt tỉa lịch sử hội thoại (tránh kiệt sức Token), áp dụng bảo mật RLS cơ sở dữ liệu và lưu trữ IndexedDB an toàn tuyệt đối.
+- **Interactive Vocabulary Vault (Mới):** Cải tiến Vault tĩnh thành hệ thống thẻ ghi nhớ (Flashcards) có phát âm TTS, theo dõi tiến độ học (Needs Practice / Mastered) bằng thuật toán đánh giá mức độ thuần thục cơ bản.
 
 ## 2. Tech Stack (Công nghệ & Thư viện)
 - **Framework:** Next.js 14+ (App Router), React, TypeScript.
@@ -57,6 +59,8 @@ Cây thư mục chính của dự án nằm trong `d:\Manro\english-practice-mvp
 - [x] Hoàn thiện tích hợp STT: Fix lỗi truyền file Binary (Blob) qua NextJS App Router mà không bị crash. 
 - [x] Khắc phục toàn bộ các sự cố "API Outage" từ Hugging Face. App hiện tại hoạt động **Trơn tru (Stable)** với `whisper-large-v3` và SDK chính thức của Hugging Face cho Llama 3.
 - [x] Text-to-Speech bằng Native Browser chạy siêu tốc (zero latency) và không bị lỗi.
+- [x] **Phase 8 (Security & Reliability):** Áp dụng bảo vệ chống Prompt Injection, cởi bỏ giới hạn 5MB vòng lặp LocalStorage bằng cách sử dụng `idb-keyval` (IndexedDB), phân quyền RLS Supabase qua Anonymous Auth, chống tấn công cạn kiệt Token bộ nhớ LLM.
+- [x] **Phase 9 (Vocabulary Vault Enhancements):** Nâng cấp Vault từ danh sách tĩnh thành hệ thống ôn tập tương tác (chức năng Flashcard tự động, chấm điểm Mastered/Needs Practice, và tích hợp phát âm từ vựng bằng TTS).
 
 ## 5. Tình trạng lỗi/Vấn đề dở dang (Current State & Blockers)
 **Về sự cố Agent crash:** Lỗi `503 Service Unavailable / MODEL_CAPACITY_EXHAUSTED` xảy ra hoàn toàn do máy chủ Google (nơi host LLM agent của tôi) bị cạn kiệt tài nguyên xử lý tạm thời, hoàn toàn **không dính líu** đến mã nguồn dự án. Mã nguồn hiện đang chạy cực kỳ ổn định.
