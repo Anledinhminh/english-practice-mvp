@@ -49,6 +49,8 @@ CREATE TABLE public.vocabulary (
     context TEXT,
     definition TEXT,
     date TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc'::text, NOW()) NOT NULL,
+    status TEXT DEFAULT 'new',
+    last_reviewed TIMESTAMP WITH TIME ZONE,
     UNIQUE(user_id, word)
 );
 

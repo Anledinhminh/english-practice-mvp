@@ -3,8 +3,8 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Badge } from "@/components/ui/badge";
 import { useProgressStore } from "@/lib/store";
+import { VocabularyVault } from "./vocabulary-vault";
 
 export function DashboardMockup() {
     const [mounted, setMounted] = useState(false);
@@ -103,26 +103,7 @@ export function DashboardMockup() {
                     </CardTitle>
                 </CardHeader>
                 <CardContent>
-                    {vocabulary.length === 0 ? (
-                        <p className="text-sm text-slate-500">
-                            No vocabulary saved yet. Highlight any word in the chat to define and save it!
-                        </p>
-                    ) : (
-                        <div className="flex flex-wrap gap-2 max-h-48 overflow-y-auto p-1">
-                            {vocabulary.map((v, i) => (
-                                <Badge key={i} variant="secondary" className="px-3 py-1.5 text-sm flex flex-col items-start gap-1 w-full sm:w-auto">
-                                    <div className="flex flex-col w-full text-left gap-1">
-                                        <div className="flex justify-between items-start w-full gap-4">
-                                            <span className="font-semibold text-slate-700 text-base">{v.word}</span>
-                                            <span className="text-xs text-slate-400 opacity-70 whitespace-nowrap mt-1">{v.date}</span>
-                                        </div>
-                                        {v.definition && <span className="text-sm text-slate-600 block leading-snug">{v.definition}</span>}
-                                        {v.context && <span className="text-xs text-slate-500 italic font-normal border-l-2 border-slate-200 pl-2 mt-1">"{v.context}"</span>}
-                                    </div>
-                                </Badge>
-                            ))}
-                        </div>
-                    )}
+                    <VocabularyVault />
                 </CardContent>
             </Card>
         </div>

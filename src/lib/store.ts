@@ -8,6 +8,8 @@ export interface VocabularyWord {
     date: string;
     context?: string;
     definition?: string;
+    status?: "new" | "learning" | "mastered";
+    lastReviewed?: string;
 }
 
 export interface PracticeSession {
@@ -47,6 +49,8 @@ interface ProgressState {
     setUserId: (id: string) => void;
     addMessage: (stats: { hasGrammarMistake: boolean; responseTimeMs: number; wordCount: number; complexWordCount: number }) => void;
     addVocabulary: (word: string, context?: string, definition?: string) => void;
+    updateVocabularyStatus: (word: string, status: "new" | "learning" | "mastered") => void;
+    deleteVocabulary: (word: string) => void;
     updateFluencyScore: () => void;
 
     // Conversation Actions
@@ -143,7 +147,8 @@ export const useProgressStore = create<ProgressState>()(
                         word,
                         context,
                         definition,
-                        date: new Date().toLocaleDateString()
+                        date: new Date().toLocaleDateString(),
+                        status: "new"
                     };
 
                     const nextState = {
@@ -158,6 +163,46 @@ export const useProgressStore = create<ProgressState>()(
                             definition,
                             date: new Date().toISOString()
                         }).then(({ error }: { error: any }) => { if (error) console.warn("[Supabase Sync] Warning:", error?.message || JSON.stringify(error)) });
+                    }
+
+                    return nextState;
+                });
+            },
+
+            updateVocabularyStatus: (word: string, status: "new" | "learning" | "mastered") => {
+                set((state) => {
+                    const nextState = {
+                        vocabulary: state.vocabulary.map(v =>
+                            v.word.toLowerCase() === word.toLowerCase()
+                                ? { ...v, status, lastReviewed: new Date().toISOString() }
+                                : v
+                        )
+                    };
+
+                    if (hasSupabaseKeys()) {
+                        supabase.from('vocabulary')
+                            .update({ status, last_reviewed: new Date().toISOString() })
+                            .eq('user_id', state.userId)
+                            .eq('word', word)
+                            .then(({ error }: { error: any }) => { if (error) console.warn("[Supabase Sync] Warning:", error?.message || JSON.stringify(error)) });
+                    }
+
+                    return nextState;
+                });
+            },
+
+            deleteVocabulary: (word: string) => {
+                set((state) => {
+                    const nextState = {
+                        vocabulary: state.vocabulary.filter(v => v.word.toLowerCase() !== word.toLowerCase())
+                    };
+
+                    if (hasSupabaseKeys()) {
+                        supabase.from('vocabulary')
+                            .delete()
+                            .eq('user_id', state.userId)
+                            .eq('word', word)
+                            .then(({ error }: { error: any }) => { if (error) console.warn("[Supabase Sync] Warning:", error?.message || JSON.stringify(error)) });
                     }
 
                     return nextState;
