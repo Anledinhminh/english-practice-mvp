@@ -16,6 +16,7 @@ Hệ thống cho phép người dùng thu âm giọng nói, dịch sang văn b�
 - **Supabase Cloud Sync (Mới):** Dữ liệu Zustand được đồng bộ hóa lên Supabase PostgreSQL theo thời gian thực (yêu cầu cấu hình API Key).
 - **Security & Reliability Hardening (Mới):** Chống tấn công Prompt Injection, giới hạn gói tin Audio (5MB), cắt tỉa lịch sử hội thoại (tránh kiệt sức Token), áp dụng bảo mật RLS cơ sở dữ liệu và lưu trữ IndexedDB an toàn tuyệt đối.
 - **Interactive Vocabulary Vault (Mới):** Cải tiến Vault tĩnh thành hệ thống thẻ ghi nhớ (Flashcards) có phát âm TTS, theo dõi tiến độ học (Needs Practice / Mastered) bằng thuật toán đánh giá mức độ thuần thục cơ bản.
+- **User Authentication (Mới):** Tích hợp Supabase Auth với đầy đủ Modal Đăng nhập/Đăng ký. Tiến độ, lịch sử và từ vựng được đồng bộ hóa lên Cloud cho từng tài khoản riêng biệt.
 
 ## 2. Tech Stack (Công nghệ & Thư viện)
 - **Framework:** Next.js 14+ (App Router), React, TypeScript.
@@ -61,6 +62,7 @@ Cây thư mục chính của dự án nằm trong `d:\Manro\english-practice-mvp
 - [x] Text-to-Speech bằng Native Browser chạy siêu tốc (zero latency) và không bị lỗi.
 - [x] **Phase 8 (Security & Reliability):** Áp dụng bảo vệ chống Prompt Injection, cởi bỏ giới hạn 5MB vòng lặp LocalStorage bằng cách sử dụng `idb-keyval` (IndexedDB), phân quyền RLS Supabase qua Anonymous Auth, chống tấn công cạn kiệt Token bộ nhớ LLM.
 - [x] **Phase 9 (Vocabulary Vault Enhancements):** Nâng cấp Vault từ danh sách tĩnh thành hệ thống ôn tập tương tác (chức năng Flashcard tự động, chấm điểm Mastered/Needs Practice, và tích hợp phát âm từ vựng bằng TTS).
+- [x] **Phase 10 (User Authentication):** Thay thế cơ chế khách vô danh bằng Đăng nhập tài khoản. Có Modal Sign In / Sign Up, liên kết tự động Zustand với Supabase Auth. Dữ liệu được cô lập và đồng bộ an toàn qua từng tài khoản.
 
 ## 5. Tình trạng lỗi/Vấn đề dở dang (Current State & Blockers)
 **Về sự cố Agent crash:** Lỗi `503 Service Unavailable / MODEL_CAPACITY_EXHAUSTED` xảy ra hoàn toàn do máy chủ Google (nơi host LLM agent của tôi) bị cạn kiệt tài nguyên xử lý tạm thời, hoàn toàn **không dính líu** đến mã nguồn dự án. Mã nguồn hiện đang chạy cực kỳ ổn định.
@@ -71,14 +73,13 @@ Cây thư mục chính của dự án nằm trong `d:\Manro\english-practice-mvp
 - Giao diện Dashboard (*Heatmap*) dùng số liệu khá đơn giản để demo.
 - Browser TTS đôi khi bị thay đổi giọng tùy thuộc vào trình duyệt và hệ điều hành (ví dụ: Chrome có giọng hay hơn).
 
-## 6. Các bước tiếp theo (Next Steps/TODOs)
-**LƯU Ý QUAN TRỌNG TỪ FOUNDER:** Dự án này tập trung tuyệt đối vào việc tối ưu chi phí (Cost-effective). **KHÔNG SỬ DỤNG REST API TRẢ PHÍ** (như OpenAI, ElevenLabs) trong các định hướng tương lai. Mọi tính năng mở rộng phải dựa trên mã nguồn mở hoặc các dịch vụ có Tier Miễn phí vĩnh viễn (như Hugging Face Serverless, Web Speech API).
+## 6. Các định hướng tiếp theo (Future Enhancements)
+**LƯU Ý QUAN TRỌNG TỪ FOUNDER:** Dự án này tập trung tuyệt đối vào việc tối ưu chi phí (Cost-effective). **KHÔNG SỬ DỤNG REST API TRẢ PHÍ** (như OpenAI, ElevenLabs) trong các định hướng tương lai. Mọi tính năng mở rộng phải dựa trên mã nguồn mở hoặc các dịch vụ có Tier Miễn phí vĩnh viễn.
 
 Dưới đây là các tác vụ nâng cao để mở rộng dự án dựa trên tiêu chí chi phí bằng 0:
 
-1. **User Authentication (Đăng nhập):** Tích hợp Supabase Auth (hoàn toàn miễn phí mức cơ bản) để nhiều người dùng có thể đăng nhập riêng biệt, khai thác tối đa sức mạnh của Cloud Database đã được setup sẵn.
-2. **Cải thiện phát âm TTS (Miễn phí):** Web Speech API hiện tại miễn phí và không có độ trễ, nhưng giọng nói phụ thuộc vào hệ điều hành. Có thể nghiên cứu tích hợp các thư viện TTS mã nguồn mở chạy trực tiếp trên Browser (như `transformers.js` WebGPU) để đảm bảo chất lượng giọng nói mượt mà, đồng nhất trên mọi thiết bị mà không tốn phí server.
-3. **Phân tích phát âm (Pronunciation Analysis):** Hiện Whisper STT chỉ lấy ra được text. Cần nghiên cứu một kỹ thuật prompt LLM mỏng nhẹ (hoặc parse dữ liệu timestamp từ file STT nếu Hugging Face hỗ trợ) để chấm điểm cụ thể người dùng đang phát âm sai ở đâu, tuyệt đối không dùng Speech-to-Text API trả phí.
+1. **Cải thiện phát âm TTS (Miễn phí):** Web Speech API hiện tại miễn phí và không có độ trễ, nhưng giọng nói phụ thuộc vào hệ điều hành. Có thể nghiên cứu tích hợp các thư viện TTS mã nguồn mở chạy trực tiếp trên Browser (như `transformers.js` WebGPU) để đảm bảo chất lượng giọng nói mượt mà, đồng nhất trên mọi thiết bị mà không tốn phí server.
+2. **Phân tích phát âm (Pronunciation Analysis):** Hiện Whisper STT chỉ lấy ra được text. Cần nghiên cứu một kỹ thuật prompt LLM mỏng nhẹ (hoặc parse dữ liệu timestamp từ file STT nếu Hugging Face hỗ trợ) để chấm điểm cụ thể người dùng đang phát âm sai ở đâu, tuyệt đối không dùng Speech-to-Text API trả phí.
 
 ---
-*Dự án hiện tại (Phase 7) đã hoàn thành xuất sắc mục tiêu MVP với toàn bộ core feature hoạt động ổn định và một codebase sẵn sàng tích hợp Production Cloud.*
+*Dự án hiện tại (Phase 10) đã hoàn thành xuất sắc mục tiêu MVP với toàn bộ core feature và hệ thống User Authentication hoạt động ổn định. Codebase hoàn toàn sẵn sàng triển khai Production.*
